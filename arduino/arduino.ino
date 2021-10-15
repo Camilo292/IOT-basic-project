@@ -15,8 +15,12 @@ FirebaseData firebaseData;
 //Define Firebase Data object
 FirebaseData fbdo;
 
+int ledPin = LED_BUILTIN;
+
 void setup()
 {
+  pinMode(ledPin, OUTPUT);
+
   Serial.begin(115200);
   Serial.println();
 
@@ -27,12 +31,12 @@ void setup()
     Serial.print(".");
     delay(250);
   }
-  Serial.print("\nConecting to Wifi");
+  Serial.print("\nWifi Connected");
   Serial.println();
 
   Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
   Firebase.reconnectWiFi(true);
-  if (!Firebase.beginStream(fbdo, "integratedLed/state"))
+  if (!Firebase.beginStream(fbdo, "/integratedLed/state"))
     Serial.printf("sream begin error, %s\n\n", fbdo.errorReason().c_str());
 }
 
@@ -53,12 +57,18 @@ void loop()
 
     if (fbdo.streamAvailable())
     {
-      Serial.printf("sream path, %s\nevent path, %s\ndata type, %s\nevent type, %s\nvalue, %s\n\n",
-                    fbdo.streamPath().c_str(),
-                    fbdo.dataPath().c_str(),
-                    fbdo.dataType().c_str(),
-                    fbdo.eventType().c_str(),
-                    fbdo.stringData().c_str());
+      String state = fbdo.stringData().c_str();
+      state == "true" ? turnOff() : turnOn();
     }
   }
+}
+void turnOn()
+{
+  digitalWrite(ledPin, HIGH);
+  Serial.println("On");
+}
+void turnOff()
+{
+  digitalWrite(ledPin, LOW);
+  Serial.println("Off");
 }
